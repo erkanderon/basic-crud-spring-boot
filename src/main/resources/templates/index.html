@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+
+</head>
+
+<body>
+	<div class="container">
+		<div class="row">
+		
+		<div class="col-xs-6">
+		<hr>
+			<table class="table" id="objects" style="width:100%">
+			  
+			  
+			</table>
+		</div>
+	
+	<hr>
+	<div class="col-xs-6">
+	<form id="createmodel">
+	  <div class="form-group">
+	    <input type="number" class="form-control" name="id" id="id" placeholder="ID">
+	  </div>
+	  <div class="form-group">
+	    <input type="text" class="form-control" name="name" id="name" placeholder="Name">
+	  </div>
+	  <div class="form-group">
+	    <input type="text" class="form-control" name="status" id="status" placeholder="Status">
+	  </div>
+	  <div class="form-group">
+	    <input type="text" class="form-control" name="description" id="description" placeholder="Description">
+	  </div>
+	  <button type="submit" class="btn btn-primary">Create</button>
+	</form>
+	</div>
+	</div>
+	<hr>
+	<div class="row">
+	<div class="col-xs-6">
+	<form id="deletemodel">
+	  <div class="form-group">
+	    <input type="number" class="form-control" name="id" id="id" placeholder="ID">
+	  </div>
+	  <button type="submit" class="btn btn-danger">Delete</button>
+	</form>
+	</div>
+	<hr>
+	<div class="col-xs-6">
+	<form id="updatemodel">
+	  <div class="form-group">
+	    <input type="number" class="form-control" name="id" id="id" placeholder="ID">
+	  </div>
+	  <div class="form-group">
+	    <input type="text" class="form-control" name="name" id="name" placeholder="Name">
+	  </div>
+	  <div class="form-group">
+	    <input type="text" class="form-control" name="status" id="status" placeholder="Status">
+	  </div>
+	  <div class="form-group">
+	    <input type="text" class="form-control" name="description" id="description" placeholder="Description">
+	  </div>
+	  <button type="submit" class="btn btn-info">Update</button>
+	</form>
+	</div>
+	</div>
+</div>
+<script>
+var get_models = function(){
+	$.ajax({
+        url: "http://localhost:8080/get-objects",
+        type: "GET",
+        crossDomain: true,
+        success: function (response) {
+            if(response.length){
+            	$("#objects").empty();
+            	$("#objects").append("<tr><th>ID</th><th>NAME</th><th>STATUS</th><th>DESCRIPTION</th></tr>");
+            	for(var i = 0; i<response.length; i++){
+            		$( "#objects" ).append( "<tr><td>"+response[i].id+"</td><td>"+response[i].name+"</td><td>"+ response[i].status +"</td><td>"+ response[i].description +"</td></tr>" );	
+            	}
+            	
+            }
+        },
+        error: function (xhr, status) {
+            
+        }
+    });
+}
+get_models();
+
+$( "#createmodel" ).submit(function( event ) {
+  var serialized = $( this ).serializeArray();
+  var req = {};
+  for(var i=0; i<serialized.length; i++){
+	  req[serialized[i].name] = serialized[i].value;
+  }
+  event.preventDefault();
+  $.ajax({
+      url: "http://localhost:8080/new-object",
+      type: "POST",
+      crossDomain: true,
+      contentType: "application/json",
+      data: JSON.stringify(req),
+      dataType: "json",
+      success: function (response) {
+          if(response === "Added"){
+          	get_models();
+          }
+      },
+      error: function (xhr, status) {
+          if(xhr.status === 200){
+        	  get_models();
+          }
+      }
+  });
+});
+
+$( "#deletemodel" ).submit(function( event ) {
+	  var serialized = $( this ).serializeArray();
+	  var req = {};
+	  for(var i=0; i<serialized.length; i++){
+		  req[serialized[i].name] = serialized[i].value;
+	  }
+	  event.preventDefault();
+	  $.ajax({
+	      url: "http://localhost:8080/delete-object/"+req["id"],
+	      type: "DELETE",
+	      crossDomain: true,
+	      success: function (response) {
+	          if(response === "Deleted"){
+	          	get_models();
+	          }
+	      },
+	      error: function (xhr, status) {
+	          if(xhr.status === 200){
+	        	  get_models();
+	          }
+	      }
+	  });
+	});
+$( "#updatemodel" ).submit(function( event ) {
+	  var serialized = $( this ).serializeArray();
+	  var req = {};
+	  for(var i=0; i<serialized.length; i++){
+		  req[serialized[i].name] = serialized[i].value;
+	  }
+	  event.preventDefault();
+	  $.ajax({
+	      url: "http://localhost:8080/update-objects/"+req["id"],
+	      type: "PUT",
+	      crossDomain: true,
+	      contentType: "application/json",
+	      data: JSON.stringify(req),
+	      dataType: "json",
+	      success: function (response) {
+	          if(response === "Updated"){
+	          	get_models();
+	          }
+	      },
+	      error: function (xhr, status) {
+	          if(xhr.status === 200){
+	        	  get_models();
+	          }
+	      }
+	  });
+	});
+</script>
+</body>
+</html>
